@@ -677,6 +677,14 @@ class DialogSession:
                 return pcm_bytes
             return audioop.tomono(pcm_bytes, in_width, 0.5, 0.5)
 
+        # 简单静音检测参数，用于判定“下一句”结束
+        silence_threshold = 500
+        # 每次 read 的时长（秒）≈ chunk / sample_rate
+        frame_duration_sec = config.input_audio_config["chunk"] / float(in_rate)
+        # 目标静音 0.5 秒
+        max_silence_chunks = max(1, int(0.5 / frame_duration_sec))
+        silence_count = 0
+
         while self.is_recording:
             try:
                 if self.external_stop_event and self.external_stop_event.is_set():
